@@ -3,6 +3,7 @@ import * as scope from "./lib/scope.js";
 import * as polite from "./lib/polite.js";
 import * as preloader from "./lib/preloader.js";
 import * as payloader from "./lib/payloader.js";
+import * as inline from "./lib/inline.js";
 
 /*
  * 	NOTE:
@@ -36,9 +37,19 @@ polite
   // prepare payload
   .then(() => payloader.execute())
 
-  // launch polite
+  // load any inlined base64 assets
   .then(fbaContent => {
-    preloader.isComplete.then(() => window.onImpression(fbaContent));
+    return inline.loadAssets().then((base64Images = []) => {
+      // get dataRaw from loaders
+      const fbaRawDataArr = fbaContent ? fbaContent.getAllContentRaw() : [];
+      const binaryAssets = base64Images.concat(fbaRawDataArr);
+      return binaryAssets;
+    });
+  })
+
+  // launch polite
+  .then(binaryAssets => {
+    preloader.isComplete.then(() => window.onImpression(binaryAssets));
   })
 
   .catch(err => {
