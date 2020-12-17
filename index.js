@@ -1,4 +1,3 @@
-import 'ad-polyfills'
 import * as scope from './lib/scope.js'
 import * as polite from './lib/polite.js'
 import * as preloader from './lib/preloader.js'
