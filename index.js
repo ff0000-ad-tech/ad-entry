@@ -1,9 +1,8 @@
-import "ad-polyfills";
-import * as scope from "./lib/scope.js";
-import * as polite from "./lib/polite.js";
-import * as preloader from "./lib/preloader.js";
-import * as payloader from "./lib/payloader.js";
-import * as inline from "./lib/inline.js";
+import * as scope from './lib/scope.js'
+import * as polite from './lib/polite.js'
+import * as preloader from './lib/preloader.js'
+import * as payloader from './lib/payloader.js'
+import * as inline from './lib/inline.js'
 
 /*
  * 	NOTE:
