@@ -51,7 +51,7 @@ polite
     preloader.isComplete.then(() => window.onImpression(binaryAssets));
   })
 
-  .catch(err => {
-    console.error(err);
-    window.failAd();
-  });
+	.catch(err => {
+		console.error(err)
+		window.useBackup()
+	})
