@@ -52,5 +52,5 @@ polite
 
 	.catch(err => {
 		console.error(err)
-		window.failAd()
+		window.useBackup()
 	})
