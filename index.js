@@ -10,6 +10,8 @@ import * as inline from './lib/inline.js'
  *	This class expects window-scoped methods to exist
  *
  */
+// callback to allow control of when polite-load launches
+let preloaderComplete
 
 polite
 	.prepare(window.adParams.politeLoadAfter)
@@ -29,7 +31,7 @@ polite
 	// prepare preloader
 	.then(() => {
 		const images = preloader.prepare(window.assets.preloader)
-		window.preparePreloader(images)
+		preloaderComplete = window.preparePreloader(images) || Promise.resolve()
 	})
 
 	// finish polite timeout
@@ -42,14 +44,13 @@ polite
 	.then(fbaImages => {
 		return inline.loadAssets().then((base64Images = []) => {
 			// get dataRaw from loaders
-			const binaryAssets = base64Images.concat(fbaImages || [])
-			return binaryAssets
+			return [...base64Images, ...fbaImages]
 		})
 	})
 
 	// launch polite
 	.then(binaryAssets => {
-		preloader.isComplete.then(() => window.onImpression(binaryAssets))
+		preloaderComplete.then(() => window.onImpression(binaryAssets))
 	})
 
 	.catch(err => {
