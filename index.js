@@ -10,6 +10,8 @@ import * as inline from './lib/inline.js'
  *	This class expects window-scoped methods to exist
  *
  */
+// callback to allow control of when polite-load launches
+let preloaderComplete
 
 polite
   .prepare(window.adParams.politeLoadAfter)
@@ -29,29 +31,27 @@ polite
 	// prepare preloader
 	.then(() => {
 		const images = preloader.prepare(window.assets.preloader)
-		window.preparePreloader(images)
+		preloaderComplete = window.preparePreloader(images) || Promise.resolve()
 	})
 
-  // finish polite timeout
-  .then(() => polite.resolveDelay())
+	// finish polite timeout
+	.then(() => polite.resolveDelay())
 
-  // prepare payload
-  .then(() => payloader.execute())
+	// prepare payload
+	.then(() => payloader.execute())
 
-  // load any inlined base64 assets
-  .then(fbaContent => {
-    return inline.loadAssets().then((base64Images = []) => {
-      // get dataRaw from loaders
-      const fbaRawDataArr = fbaContent ? fbaContent.getAllContentRaw() : [];
-      const binaryAssets = base64Images.concat(fbaRawDataArr);
-      return binaryAssets;
-    });
-  })
+	// load any inlined base64 assets
+	.then(fbaImages => {
+		return inline.loadAssets().then((base64Images = []) => {
+			// get dataRaw from loaders
+			return [...base64Images, ...fbaImages]
+		})
+	})
 
-  // launch polite
-  .then(binaryAssets => {
-    preloader.isComplete.then(() => window.onImpression(binaryAssets));
-  })
+	// launch polite
+	.then(binaryAssets => {
+		preloaderComplete.then(() => window.onImpression(binaryAssets))
+	})
 
 	.catch(err => {
 		console.error(err)
