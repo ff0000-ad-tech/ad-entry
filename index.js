@@ -26,9 +26,11 @@ polite
   // prepare network
   .then(() => window.prepareNetworkExit())
 
-  // prepare preloader
-  .then(() => preloader.prepare())
-  .then(() => window.preparePreloadMisc())
+	// prepare preloader
+	.then(() => {
+		const images = preloader.prepare(window.assets.preloader)
+		window.preparePreloader(images)
+	})
 
   // finish polite timeout
   .then(() => polite.resolveDelay())
