@@ -12,48 +12,39 @@ import * as inline from './lib/inline.js'
  */
 // callback to allow control of when polite-load launches
 let preloaderComplete
+const begin = async () => {
+	try {
+		await polite.prepare(window.adParams.politeLoadAfter)
+		// prepare vendor onload (Network.js)
+		await window.prepareIndex()
+		// prepare scope
+		scope.prepare()
+		// misc index control
+		await window.prepareAdParamsMisc()
+		// prepare network
+		await window.prepareNetworkExit()
 
-polite
-  .prepare(window.adParams.politeLoadAfter)
-
-  // prepare vendor onload (Network.js)
-  .then(() => window.prepareIndex())
-
-  // prepare scope
-  .then(() => scope.prepare())
-
-  // misc index control
-  .then(() => window.prepareAdParamsMisc())
-
-  // prepare network
-  .then(() => window.prepareNetworkExit())
-
-	// prepare preloader
-	.then(() => {
+		// prepare preloader
 		const images = preloader.prepare(window.assets.preloader)
+		// allow index custom preloader routines to resolve
 		preloaderComplete = window.preparePreloader(images) || Promise.resolve()
-	})
 
-	// finish polite timeout
-	.then(() => polite.resolveDelay())
+		// finish polite timeout (some networks require delay before asset load)
+		await polite.resolveDelay()
 
-	// prepare payload
-	.then(() => payloader.execute())
+		// preload fonts and images
+		const binaryImages = await payloader.execute()
+		// include preloader for build
+		const inlineImages = await inline.loadAssets()
 
-	// load any inlined base64 assets
-	.then(fbaImages => {
-		return inline.loadAssets().then((base64Images = []) => {
-			// get dataRaw from loaders
-			return [...base64Images, ...fbaImages]
-		})
-	})
+		// preload complete
+		await preloaderComplete
 
-	// launch polite
-	.then(binaryAssets => {
-		preloaderComplete.then(() => window.onImpression(binaryAssets))
-	})
-
-	.catch(err => {
+		// launch polite
+		window.onImpression([...binaryImages, ...inlineImages])
+	} catch (err) {
 		console.error(err)
 		window.useBackup()
-	})
+	}
+}
+begin()
