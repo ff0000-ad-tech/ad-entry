@@ -2,7 +2,6 @@ import * as scope from './lib/scope.js'
 import * as polite from './lib/polite.js'
 import * as preloader from './lib/preloader.js'
 import * as payloader from './lib/payloader.js'
-import * as inline from './lib/inline.js'
 
 /*
  * 	NOTE:
@@ -25,7 +24,7 @@ const begin = async () => {
 		await window.prepareNetworkExit()
 
 		// prepare preloader
-		const images = preloader.prepare(window.assets.preloader)
+		const images = preloader.prepare(window.assets.preloaders)
 		// allow index custom preloader routines to resolve
 		preloaderComplete = window.preparePreloader(images) || Promise.resolve()
 
@@ -33,15 +32,12 @@ const begin = async () => {
 		await polite.resolveDelay()
 
 		// preload fonts and images
-		const binaryImages = await payloader.execute()
-		// include preloader for build
-		const inlineImages = await inline.loadAssets()
-
+		const assets = await payloader.loadAssets()
 		// preload complete
 		await preloaderComplete
 
 		// launch polite
-		window.onImpression([...binaryImages, ...inlineImages])
+		window.onImpression(assets)
 	} catch (err) {
 		console.error(err)
 		window.useBackup()
