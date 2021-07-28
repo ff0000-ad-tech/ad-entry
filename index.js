@@ -24,20 +24,21 @@ const begin = async () => {
 		await window.prepareNetworkExit()
 
 		// prepare preloader
-		const images = preloader.prepare(window.assets.preloaders)
+		const preloaders = await preloader.loadPreloaders(window.assets)
 		// allow index custom preloader routines to resolve
-		preloaderComplete = window.preparePreloader(images) || Promise.resolve()
+		preloaderComplete = window.preparePreloader(preloaders) || Promise.resolve()
 
 		// finish polite timeout (some networks require delay before asset load)
 		await polite.resolveDelay()
 
-		// preload fonts and images
-		const assets = await payloader.loadAssets()
+		// load build payloads: fonts, scripts, images, binaries
+		const assets = await payloader.loadAssets(window.assets)
+
 		// preload complete
 		await preloaderComplete
 
 		// launch polite
-		window.onImpression(assets)
+		window.onImpression({ ...assets, preloaders })
 	} catch (err) {
 		console.error(err)
 		window.useBackup()
