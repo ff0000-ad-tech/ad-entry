@@ -1,15 +1,12 @@
-##### RED Interactive Agency - Ad Technology
+##### 160over90 - Ad Technology
 
-[![npm (tag)](https://img.shields.io/npm/v/@ff0000-ad-tech%2Fad-entry.svg?style=flat-square)](https://www.npmjs.com/package/@ff0000-ad-tech%2Fad-entry)
-[![GitHub issues](https://img.shields.io/github/issues/ff0000-ad-tech/ad-entry.svg?style=flat-square)](https://github.com/ff0000-ad-tech/ad-entry)
-[![npm downloads](https://img.shields.io/npm/dm/@ff0000-ad-tech%2Fad-entry.svg?style=flat-square)](https://www.npmjs.com/package/@ff0000-ad-tech%2Fad-entry)
+# Ad-Entry
 
-[![GitHub contributors](https://img.shields.io/github/contributors/ff0000-ad-tech/ad-entry.svg?style=flat-square)](https://github.com/ff0000-ad-tech/ad-entry/graphs/contributors/)
-[![GitHub commit-activity](https://img.shields.io/github/commit-activity/y/ff0000-ad-tech/ad-entry.svg?style=flat-square)](https://github.com/ff0000-ad-tech/ad-entry/commits/master)
-[![npm license](https://img.shields.io/npm/l/@ff0000-ad-tech%2Fad-entry.svg?style=flat-square)](https://github.com/ff0000-ad-tech/ad-entry/blob/master/LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+Our ad framework gets compiled in two separate webpack bundles:
 
-# Entry
+1. Initial - `index.html` JS boilerplate inlined into the index.
+2. Build - `build.bundle.js` JSX ad creative, politely loaded by the index.
 
+This package is the "initial"-bundle's entry point.
 
-
+While the `index.html` is the true "entry point" for our ads, this package is the beginning of the compiled ESM dependencies. This entry gets bundled by [wp-deploy-manager](https://github.com/ff0000-ad-tech/wp-deploy-manager/blob/master/webpack-config.js) and inlined into the index by [wp-plugin-index](https://github.com/ff0000-ad-tech/wp-plugin-index).

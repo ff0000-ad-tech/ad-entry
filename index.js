@@ -2,7 +2,6 @@ import * as scope from './lib/scope.js'
 import * as polite from './lib/polite.js'
 import * as preloader from './lib/preloader.js'
 import * as payloader from './lib/payloader.js'
-import * as inline from './lib/inline.js'
 
 /*
  * 	NOTE:
@@ -12,48 +11,37 @@ import * as inline from './lib/inline.js'
  */
 // callback to allow control of when polite-load launches
 let preloaderComplete
+const begin = async () => {
+	try {
+		await polite.prepare(window.adParams.politeLoadAfter)
+		// prepare vendor onload (Network.js)
+		await window.prepareIndex()
+		// prepare scope
+		scope.prepare()
+		// misc index control
+		await window.prepareAdParamsMisc()
+		// prepare network
+		await window.prepareNetworkExit()
 
-polite
-	.prepare(window.adParams.politeLoadAfter)
+		// prepare preloader
+		const preloaders = await preloader.loadPreloaders(window.assets)
+		// allow index custom preloader routines to resolve
+		preloaderComplete = window.preparePreloader(preloaders) || Promise.resolve()
 
-	// prepare vendor onload (Network.js)
-	.then(() => window.prepareIndex())
+		// finish polite timeout (some networks require delay before asset load)
+		await polite.resolveDelay()
 
-	// prepare scope
-	.then(() => scope.prepare())
+		// load build payloads: fonts, scripts, images, binaries
+		const assets = await payloader.loadAssets(window.assets)
 
-	// misc index control
-	.then(() => window.prepareAdParamsMisc())
+		// preload complete
+		await preloaderComplete
 
-	// prepare network
-	.then(() => window.prepareNetworkExit())
-
-	// prepare preloader
-	.then(() => {
-		const images = preloader.prepare(window.assets.preloader)
-		preloaderComplete = window.preparePreloader(images) || Promise.resolve()
-	})
-
-	// finish polite timeout
-	.then(() => polite.resolveDelay())
-
-	// prepare payload
-	.then(() => payloader.execute())
-
-	// load any inlined base64 assets
-	.then(fbaImages => {
-		return inline.loadAssets().then((base64Images = []) => {
-			// get dataRaw from loaders
-			return [...base64Images, ...fbaImages]
-		})
-	})
-
-	// launch polite
-	.then(binaryAssets => {
-		preloaderComplete.then(() => window.onImpression(binaryAssets))
-	})
-
-	.catch(err => {
+		// launch polite
+		window.onImpression({ ...assets, preloaders })
+	} catch (err) {
 		console.error(err)
 		window.useBackup()
-	})
+	}
+}
+begin()
